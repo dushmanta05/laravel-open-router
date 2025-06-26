@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_MODEL'),
+        'model' => env('OPENROUTER_API_MAX_TOKENS'),
+    ],
 ];
