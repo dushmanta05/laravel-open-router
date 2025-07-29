@@ -24,7 +24,7 @@ class OpenRouterController extends Controller
 
             $openRouterConfig = config('services.openrouter');
             $model = $openRouterConfig['model'];
-            $maxTokens = (int) ($openRouterConfig['max_tokens'] ?? 2000);
+            $max_tokens = (int) ($openRouterConfig['max_tokens'] ?? 100);
 
             $messageData = new MessageData(
                 content: $message,
@@ -36,15 +36,14 @@ class OpenRouterController extends Controller
                     $messageData,
                 ],
                 model: $model,
-                max_tokens: $maxTokens,
+                max_tokens: 2000,
             );
 
             $chatResponse = LaravelOpenRouter::chatRequest($chatData);
-
             $responseArray = $chatResponse->toArray();
+
             return response()->json(['response' => $responseArray]);
         } catch (Throwable $e) {
-
             return response()->json([
                 'error' => 'An error occurred while processing the request',
                 'details' => $e->getMessage()
