@@ -13,6 +13,13 @@ use App\Enums\RoleType;
 
 class OpenRouterController extends Controller
 {
+    protected OpenRouterService $openRouterService;
+
+    public function __construct(OpenRouterService $openRouterService)
+    {
+        $this->openRouterService = $openRouterService;
+    }
+
     public function generateResponse(Request $request): JsonResponse
     {
         try {
@@ -46,6 +53,24 @@ class OpenRouterController extends Controller
         } catch (Throwable $e) {
             return response()->json([
                 'error' => 'An error occurred while processing the request',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCredits(): JsonResponse
+    {
+        try {
+            $credits = $this->openRouterService->getCredits();
+
+            if (!$credits) {
+                return response()->json(['error' => 'Failed to fetch credits'], 500);
+            }
+
+            return response()->json(['credits' => $credits]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'An unexpected error occurred',
                 'details' => $e->getMessage()
             ], 500);
         }

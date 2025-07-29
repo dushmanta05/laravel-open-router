@@ -36,7 +36,9 @@ return [
     ],
 
     'openrouter' => [
-        'model' => env('OPENROUTER_API_MODEL'),
-        'max_tokens' => env('OPENROUTER_API_MAX_TOKENS'),
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'model' => 'deepseek/deepseek-chat-v3-0324:free',
+        'max_tokens' => 100,
+        'credits_url' => 'https://openrouter.ai/api/v1/credits',
     ],
 ];
