@@ -75,4 +75,22 @@ class OpenRouterController extends Controller
             ], 500);
         }
     }
+
+    public function getAvailableProviders(): JsonResponse
+    {
+        try {
+            $providers = $this->openRouterService->getProviders();
+
+            if (!$providers) {
+                return response()->json(['error' => 'Failed to fetch providers'], 500);
+            }
+
+            return response()->json(['providers' => $providers]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'An error occurred',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

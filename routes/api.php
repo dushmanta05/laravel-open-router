@@ -8,3 +8,4 @@ use App\Http\Controllers\OpenRouterController;
 Route::get('/user', fn(Request $request) => $request->user())->middleware('auth:sanctum');
 Route::post('/generate', [OpenRouterController::class, 'generateResponse']);
 Route::get('/openrouter/credits', [OpenRouterController::class, 'getCredits']);
+Route::get('/openrouter/providers', [OpenRouterController::class, 'getAvailableProviders']);

@@ -40,5 +40,6 @@ return [
         'model' => 'deepseek/deepseek-chat-v3-0324:free',
         'max_tokens' => 100,
         'credits_url' => 'https://openrouter.ai/api/v1/credits',
+        'providers_url' => 'https://openrouter.ai/api/v1/providers',
     ],
 ];
