@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\OpenRouterService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
@@ -50,6 +51,30 @@ class OpenRouterController extends Controller
             $responseArray = $chatResponse->toArray();
 
             return response()->json(['response' => $responseArray]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'An error occurred while processing the request',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateWithEndpoint(Request $request): JsonResponse
+    {
+        try {
+            $message = $request->input('message');
+
+            if (!$message) {
+                return response()->json(['error' => 'Message is required'], 400);
+            }
+
+            $response = $this->openRouterService->sendMessage($message);
+
+            if (!$response) {
+                return response()->json(['error' => 'Failed to get a valid response from OpenRouter'], 500);
+            }
+
+            return response()->json(['response' => $response, 'success' => true]);
         } catch (Throwable $e) {
             return response()->json([
                 'error' => 'An error occurred while processing the request',

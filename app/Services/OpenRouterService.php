@@ -16,10 +16,41 @@ class OpenRouterService
     public function __construct()
     {
         $config = config('services.openrouter');
+        $this->baseUrl = $config['base_url'];
         $this->apiKey = $config['api_key'];
         $this->model = $config['model'];
         $this->creditsUrl = $config['credits_url'];
         $this->providersUrl = $config['providers_url'];
+    }
+
+    public function sendMessage(string $message): ?string
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->post($this->baseUrl, [
+                        'model' => $this->model,
+                        'messages' => [
+                            [
+                                'role' => 'user',
+                                'content' => $message,
+                            ]
+                        ]
+                    ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info($data);
+                return $data['choices'][0]['message']['content'] ?? null;
+            }
+            Log::info($response);
+
+            return null;
+        } catch (Throwable $e) {
+            Log::error('OpenRouterService exception: ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function getCredits(): ?array
