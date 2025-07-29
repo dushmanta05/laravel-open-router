@@ -11,3 +11,5 @@ Route::post('/openrouter/endpoint', [OpenRouterController::class, 'generateWithE
 Route::get('/openrouter/credits', [OpenRouterController::class, 'getCredits']);
 Route::get('/openrouter/providers', [OpenRouterController::class, 'getAvailableProviders']);
 Route::get('/openrouter/structured', [OpenRouterController::class, 'getStructuredOutput']);
+Route::get('/openrouter/multi-turn', [OpenRouterController::class, 'multiTurnChat']);
+Route::get('/openrouter/chat-structured', [OpenRouterController::class, 'structuredMultiTurnChat']);

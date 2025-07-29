@@ -96,6 +96,106 @@ class OpenRouterController extends Controller
         return response()->json(['data' => $response]);
     }
 
+    public function multiTurnChat(): JsonResponse
+    {
+        $chatHistory = [
+            [
+                'role' => 'user',
+                'content' => 'What is JavaScript?'
+            ],
+            [
+                'role' => 'assistant',
+                'content' => 'JavaScript is a programming language used to build interactive websites and applications.'
+            ],
+            [
+                'role' => 'user',
+                'content' => 'Can you explain what variables are in JavaScript?'
+            ]
+        ];
+
+        try {
+            $response = $this->openRouterService->generateWithChatHistory($chatHistory);
+
+            if (!$response) {
+                return response()->json(['error' => 'Failed to get model response'], 500);
+            }
+
+            return response()->json([
+                'messages' => array_merge($chatHistory, [
+                    [
+                        'role' => 'assistant',
+                        'content' => $response
+                    ]
+                ])
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'An error occurred',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function structuredMultiTurnChat(): JsonResponse
+    {
+        $chatHistory = [
+            [
+                'role' => 'user',
+                'content' => 'Hey, I’m planning a trip to London.'
+            ],
+            [
+                'role' => 'assistant',
+                'content' => 'Sounds exciting! What info you need for the trip?'
+            ],
+            [
+                'role' => 'user',
+                'content' => 'Can you tell me the current weather there?'
+            ]
+        ];
+
+        $schema = [
+            'name' => 'weather',
+            'strict' => true,
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'location' => [
+                        'type' => 'string',
+                        'description' => 'City or location name'
+                    ],
+                    'temperature' => [
+                        'type' => 'number',
+                        'description' => 'Temperature in Celsius'
+                    ],
+                    'conditions' => [
+                        'type' => 'string',
+                        'description' => 'Weather conditions description'
+                    ]
+                ],
+                'required' => ['location', 'temperature', 'conditions'],
+                'additionalProperties' => false
+            ]
+        ];
+
+        try {
+            $response = $this->openRouterService->generateStructuredChatHistory($chatHistory, $schema);
+
+            if (!$response) {
+                return response()->json(['error' => 'Failed to fetch structured weather data'], 500);
+            }
+
+            return response()->json([
+                'messages' => $chatHistory,
+                'structured_response' => $response
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'error' => 'An error occurred',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function generateWithEndpoint(Request $request): JsonResponse
     {
         try {
