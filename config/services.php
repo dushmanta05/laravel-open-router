@@ -37,7 +37,8 @@ return [
 
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
-        'model' => 'deepseek/deepseek-chat-v3-0324:free',
+        // 'model' => 'deepseek/deepseek-chat-v3-0324:free',
+        'model' => 'mistralai/mistral-small-3.1-24b-instruct:free',
         'max_tokens' => 100,
         'base_url' => 'https://openrouter.ai/api/v1/chat/completions',
         'credits_url' => 'https://openrouter.ai/api/v1/credits',

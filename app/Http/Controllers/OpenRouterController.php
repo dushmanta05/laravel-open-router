@@ -21,7 +21,7 @@ class OpenRouterController extends Controller
         $this->openRouterService = $openRouterService;
     }
 
-    public function generateResponse(Request $request): JsonResponse
+    public function generateTextResponse(Request $request): JsonResponse
     {
         try {
             $message = $request->input('message');
@@ -59,6 +59,43 @@ class OpenRouterController extends Controller
         }
     }
 
+    public function getStructuredOutput(Request $request): JsonResponse
+    {
+        $prompt = "What's the weather like in London? Give a dummy example if you don't know.";
+
+        $schema = [
+            'name' => 'weather',
+            'strict' => true,
+            'schema' => [
+                'type' => 'object',
+                'properties' => [
+                    'location' => [
+                        'type' => 'string',
+                        'description' => 'City or location name',
+                    ],
+                    'temperature' => [
+                        'type' => 'number',
+                        'description' => 'Temperature in Celsius',
+                    ],
+                    'conditions' => [
+                        'type' => 'string',
+                        'description' => 'Weather conditions description',
+                    ],
+                ],
+                'required' => ['location', 'temperature', 'conditions'],
+                'additionalProperties' => false,
+            ]
+        ];
+
+        $response = $this->openRouterService->generateStructuredResponse($prompt, $schema);
+
+        if (!$response) {
+            return response()->json(['error' => 'Failed to fetch structured data'], 500);
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
     public function generateWithEndpoint(Request $request): JsonResponse
     {
         try {
@@ -68,7 +105,7 @@ class OpenRouterController extends Controller
                 return response()->json(['error' => 'Message is required'], 400);
             }
 
-            $response = $this->openRouterService->sendMessage($message);
+            $response = $this->openRouterService->generateResponse($message);
 
             if (!$response) {
                 return response()->json(['error' => 'Failed to get a valid response from OpenRouter'], 500);
