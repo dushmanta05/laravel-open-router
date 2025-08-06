@@ -13,3 +13,4 @@ Route::get('/openrouter/providers', [OpenRouterController::class, 'getAvailableP
 Route::get('/openrouter/structured', [OpenRouterController::class, 'getStructuredOutput']);
 Route::get('/openrouter/multi-turn', [OpenRouterController::class, 'multiTurnChat']);
 Route::get('/openrouter/chat-structured', [OpenRouterController::class, 'structuredMultiTurnChat']);
+Route::get('/openrouter/structured-with-prompt', [OpenRouterController::class, 'generateStrctureOutputWithPrompt']);

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseHelper;
 use App\Services\OpenRouterService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Log;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
 use MoeMizrak\LaravelOpenrouter\Facades\LaravelOpenRouter;
@@ -194,6 +196,103 @@ class OpenRouterController extends Controller
                 'details' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function generateStrctureOutputWithPrompt(Request $request): JsonResponse
+    {
+        $prompt = <<<TEXT
+        Expand the niche "Beginner-friendly personal finance" into a single useful content idea suitable for building a structured resource like a course or membership.
+
+        1. Do not describe the niche itself — focus directly on the content idea.
+        2. Provide just one practical content idea that a creator could develop and offer to others.
+        3. Include:
+           - A clear, concise title (avoid using buzzwords or promotional terms)
+           - A short description explaining the focus of the course or membership
+           - A specific example of what the content would include
+           - A brief explanation of how it helps the learner or user
+
+        Before listing the idea, include a short and friendly summary (response_message) introducing the content idea in natural language, without referring to technical schema fields like "title" or "description".
+
+        Additionally, include a follow-up question to gather any final requirements or changes needed for the resource structure, such as:
+        - Any adjustments needed to the difficulty level or target audience?
+        - Should we modify the module structure or lesson focus?
+        - Any specific topics that should be emphasized or de-emphasized?
+        - Changes to the overall learning path or progression?
+        - Any other refinements to better serve your audience's needs?
+
+        Note: Text will be appended after your response asking if the user wants to proceed with creating the resource.
+
+        If the user has already provided comprehensive resource requirements and no adjustments are needed, set follow_up_question to null or empty string.
+
+        Avoid using words like "monetization", "innovation", "transformative", or similar jargon. Use simple, helpful language focused on clarity and usefulness.
+
+        Return the response as structured JSON.
+        TEXT;
+
+        $schema = [
+            'type' => 'object',
+            'properties' => [
+                'response_message' => [
+                    'type' => 'string',
+                    'description' => 'Response message for the user'
+                ],
+                'title' => [
+                    'type' => 'string',
+                    'description' => 'Title of the content'
+                ],
+                'ideas' => [
+                    'type' => 'array',
+                    'description' => 'List of content ideas',
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Title of the idea'
+                            ],
+                            'description' => [
+                                'type' => 'string',
+                                'description' => 'Description of the idea'
+                            ],
+                            'example' => [
+                                'type' => 'string',
+                                'description' => 'Example demonstrating the idea'
+                            ],
+                            'benefit' => [
+                                'type' => 'string',
+                                'description' => 'Benefit of implementing this idea'
+                            ],
+                        ],
+                        'required' => ['title', 'description', 'example', 'benefit']
+                    ]
+                ],
+                'follow_up_question' => [
+                    'type' => 'string',
+                    'description' => 'Follow-up question to gather additional requirements or set to empty if none needed'
+                ],
+            ],
+            'required' => ['response_message', 'title', 'ideas', 'follow_up_question']
+        ];
+
+        $prompt .= "\n\nYou must respond with JSON that strictly follows this exact schema:\n";
+        $prompt .= json_encode($schema, JSON_UNESCAPED_SLASHES);
+        $prompt .= "\n\nImportant: Only return the raw JSON with no additional text, commentary, or markdown formatting. The response must be valid JSON that can be parsed directly.";
+
+        $rawResponse = $this->openRouterService->structureOutputWithPrompt($prompt);
+        Log::info($rawResponse);
+
+        if (!$rawResponse) {
+            return response()->json(['error' => 'Failed to generate response'], 500);
+        }
+
+        $output = ResponseHelper::cleanJsonResponse($rawResponse);
+        Log::info($output);
+
+        if (!$output) {
+            return response()->json(['error' => 'Failed to parse structured JSON'], 500);
+        }
+
+        return response()->json(['data' => $output]);
     }
 
     public function generateWithEndpoint(Request $request): JsonResponse

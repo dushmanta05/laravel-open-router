@@ -28,7 +28,7 @@ class OpenRouterService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
                         'model' => $this->model,
@@ -58,7 +58,7 @@ class OpenRouterService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
                         'model' => $this->model,
@@ -95,7 +95,7 @@ class OpenRouterService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer {$this->apiKey}',
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
                         'model' => $this->model,
@@ -118,11 +118,46 @@ class OpenRouterService
         }
     }
 
+    public function structureOutputWithPrompt(string $prompt): ?string
+    {
+        try {
+            $messages = [
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
+            ];
+
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer {$this->apiKey}",
+                'Content-Type' => 'application/json',
+            ])->post($this->baseUrl, [
+                        'model' => $this->model,
+                        'messages' => $messages,
+                        'max_tokens' => 5000
+                    ]);
+
+            if ($response->successful()) {
+                return $response->json()['choices'][0]['message']['content'] ?? null;
+            }
+
+            Log::info($response);
+            Log::error('structureOutputWithPrompt API error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return null;
+        } catch (Throwable $e) {
+            Log::error('structureOutputWithPrompt exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     public function generateStructuredChatHistory(array $messages, array $schema): ?array
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])->post($this->baseUrl, [
                         'model' => $this->model,
@@ -154,7 +189,7 @@ class OpenRouterService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => "Bearer {$this->apiKey}",
             ])->get($this->creditsUrl);
 
             if ($response->successful()) {
